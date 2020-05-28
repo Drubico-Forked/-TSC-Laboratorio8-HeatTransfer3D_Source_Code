@@ -135,30 +135,41 @@ void crearSistemasLocales(mesh &m,vector<Matrix> &localKs,vector<Vector> &localb
     }
 }
 
-
-// Falta realizar el lado derecho
 void assemblyK(element e,Matrix localK,Matrix &K){
     int index1 = e.getNode1() - 1;
     int index2 = e.getNode2() - 1;
     int index3 = e.getNode3() - 1;
+    int index4 = e.getNode4() - 1;
 
     K.at(index1).at(index1) += localK.at(0).at(0);
     K.at(index1).at(index2) += localK.at(0).at(1);
     K.at(index1).at(index3) += localK.at(0).at(2);
+    K.at(index1).at(index4) += localK.at(0).at(3);
+
     K.at(index2).at(index1) += localK.at(1).at(0);
     K.at(index2).at(index2) += localK.at(1).at(1);
     K.at(index2).at(index3) += localK.at(1).at(2);
+    K.at(index2).at(index4) += localK.at(1).at(3);
+
     K.at(index3).at(index1) += localK.at(2).at(0);
     K.at(index3).at(index2) += localK.at(2).at(1);
     K.at(index3).at(index3) += localK.at(2).at(2);
+    K.at(index3).at(index4) += localK.at(2).at(3);
+
+    K.at(index4).at(index1) += localK.at(3).at(0);
+    K.at(index4).at(index2) += localK.at(3).at(1);
+    K.at(index4).at(index3) += localK.at(3).at(2);
+    K.at(index4).at(index3) += localK.at(3).at(3);
 }
 
 void assemblyb(element e,Vector localb,Vector &b){
     int index1 = e.getNode1() - 1;
     int index2 = e.getNode2() - 1;
     int index3 = e.getNode3() - 1;
+    int index4 = e.getNode4() - 1;
 
     b.at(index1) += localb.at(0);
     b.at(index2) += localb.at(1);
     b.at(index3) += localb.at(2);
+    b.at(index4) += localb.at(3);
 }

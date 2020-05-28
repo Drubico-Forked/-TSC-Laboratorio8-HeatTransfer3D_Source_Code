@@ -15,13 +15,13 @@ void obtenerDatos(istream &file,int nlines,int n,int mode,item* item_list){
             break;
         case INT_FLOAT_FLOAT_FLOAT:
             int e; float node1, node2, node3;
-            file >> e >> node1 >> node2, node3;
+            file >> e >> node1 >> node2 >> node3;
             item_list[i].setValues(e,node1,node2,node3,0,0,0,0);
             break;
         case INT_INT_INT_INT_INT:
-            int e,e1,e2,e3,e4;
-            file >> e >> e1 >> e2 >> e3 >> e4;
-            item_list[i].setValues(e,0,0,0,e1,e2,e3,e4);
+            int element,e1,e2,e3,e4;
+            file >> element >> e1 >> e2 >> e3 >> e4;
+            item_list[i].setValues(element,0,0,0,e1,e2,e3,e4);
             break;
         }
     }

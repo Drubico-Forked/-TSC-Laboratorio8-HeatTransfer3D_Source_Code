@@ -20,18 +20,18 @@ int main(int argc, char *argv[])
     Vector T;
 
     cout << "IMPLEMENTACI"<<char(224)<<"N DEL M"<<char(144)<<"TODO DE LOS ELEMENTOS FINITOS\n"
-         << "\t- TRANSFERENCIA DE CALOR\n" << "\t- 2 DIMENSIONES\n"
+         << "\t- TRANSFERENCIA DE CALOR\n" << "\t- 3 DIMENSIONES\n"
          << "\t- FUNCIONES DE FORMA LINEALES\n" << "\t- PESOS DE GALERKIN\n"
          << "*********************************************************************************\n\n";
 
     mesh m;
     leerMallayCondiciones(m,filename);
-    cout << "Datos obtenidos correctamente\n********************\n";
-
+    
     crearSistemasLocales(m,localKs,localbs);
-
+    
     zeroes(K,m.getSize(NODES));
     zeroes(b,m.getSize(NODES));
+
     ensamblaje(m,localKs,localbs,K,b);
 
     applyNeumann(m,b);
