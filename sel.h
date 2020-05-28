@@ -1,38 +1,32 @@
 float calculateLocalD(int i,mesh m){
-    float D,a,b,c,d;
+    Matrix matrix;
+    Vector row1, row2, row3;
 
-    element e = m.getElement(i);
-
-    node n1 = m.getNode(e.getNode1()-1);
-    node n2 = m.getNode(e.getNode2()-1);
-    node n3 = m.getNode(e.getNode3()-1);
-
-    a = n2.getX()-n1.getX(); b = n2.getY()-n1.getY();
-    c = n3.getX()-n1.getX(); d = n3.getY()-n1.getY();
-    D = a*d - b*c;
-
-    return D;
-}
-
-float calculateMagnitude(float v1, float v2){
-    return sqrt(pow(v1,2)+pow(v2,2));
-}
-
-float calculateLocalArea(int i,mesh m){
-    float A,s,a,b,c;
     element e = m.getElement(i);
     node n1 = m.getNode(e.getNode1()-1);
     node n2 = m.getNode(e.getNode2()-1);
     node n3 = m.getNode(e.getNode3()-1);
+    node n4 = m.getNode(e.getNode4()-1);
 
-    a = calculateMagnitude(n2.getX()-n1.getX(),n2.getY()-n1.getY());
-    b = calculateMagnitude(n3.getX()-n2.getX(),n3.getY()-n2.getY());
-    c = calculateMagnitude(n3.getX()-n1.getX(),n3.getY()-n1.getY());
-    s = (a+b+c)/2;
+    row1.push_back(calcularTenedor(e, EQUIS, 2, 1, m));
+    row1.push_back(calcularTenedor(e, YE, 2, 1, m));
+    row1.push_back(calcularTenedor(e, ZETA, 2, 1, m));
 
-    A = sqrt(s*(s-a)*(s-b)*(s-c));
-    return A;
+    row2.push_back(calcularTenedor(e, EQUIS, 3, 1, m));
+    row2.push_back(calcularTenedor(e, YE, 3, 1, m));
+    row2.push_back(calcularTenedor(e, ZETA, 3, 1, m));
+
+    row3.push_back(calcularTenedor(e, EQUIS, 4, 1, m));
+    row3.push_back(calcularTenedor(e, YE, 4, 1, m));
+    row3.push_back(calcularTenedor(e, ZETA, 4, 1, m));
+
+    matrix.push_back(row1);
+    matrix.push_back(row2);
+    matrix.push_back(row3);
+
+    return determinant(matrix);
 }
+
 
 void calculateLocalA(int i,Matrix &A,mesh m){
     
@@ -42,17 +36,27 @@ void calculateLocalA(int i,Matrix &A,mesh m){
     node n2 = m.getNode(e.getNode2()-1);
     node n3 = m.getNode(e.getNode3()-1);
 
-    A.at(0).at(0) = n3.getY()-n1.getY(); A.at(0).at(1) = n1.getY()-n2.getY();
-    A.at(1).at(0) = n1.getX()-n3.getX(); A.at(1).at(1) = n2.getX()-n1.getX();
+    A.at(0).at(0) = OperarRestaTenedor(e, YE, ZETA, 3, 4, m);
+    A.at(0).at(1) = OperarRestaTenedor(e, YE, ZETA, 4, 2, m);
+    A.at(0).at(2) = OperarRestaTenedor(e, YE, ZETA, 2, 3, m);
+
+    A.at(1).at(0) = OperarRestaTenedor(e, EQUIS, ZETA, 4, 3, m);
+    A.at(1).at(1) = OperarRestaTenedor(e, EQUIS, ZETA, 2, 4, m);
+    A.at(1).at(2) = OperarRestaTenedor(e, EQUIS, ZETA, 3, 2, m);
+
+    A.at(2).at(0) = OperarRestaTenedor(e, EQUIS, YE, 3, 4, m);
+    A.at(2).at(1) = OperarRestaTenedor(e, EQUIS, YE, 4, 2, m);
+    A.at(2).at(2) = OperarRestaTenedor(e, EQUIS, YE, 2, 3, m);
 }
 
 void calculateB(Matrix &B){
-    B.at(0).at(0) = -1; B.at(0).at(1) = 1; B.at(0).at(2) = 0;
-    B.at(1).at(0) = -1; B.at(1).at(1) = 0; B.at(1).at(2) = 1;
+    B.at(0).at(0) = -1; B.at(0).at(1) = 1; B.at(0).at(2) = 0; B.at(0).at(3) = 0;
+    B.at(1).at(0) = -1; B.at(1).at(1) = 0; B.at(1).at(2) = 1; B.at(1).at(3) = 0;
+    B.at(2).at(0) = -1; B.at(2).at(1) = 0; B.at(2).at(2) = 0; B.at(2).at(3) = 1;
 }
 
 Matrix createLocalK(int element,mesh &m){
-    float D,Ae,k = m.getParameter(THERMAL_CONDUCTIVITY);
+    float D,Ve,k = m.getParameter(THERMAL_CONDUCTIVITY);
     Matrix K,A,B,Bt,At;
 
     D = calculateLocalD(element,m);
@@ -62,19 +66,21 @@ Matrix createLocalK(int element,mesh &m){
         exit(EXIT_FAILURE);
     }
 
-    Ae = calculateLocalArea(element,m);
+    Ve = calculateLocalVolume(element,m);
 
-    zeroes(A,2);
-    zeroes(B,2,3);
+    zeroes(A,3);
+    zeroes(B,3,4);
     calculateLocalA(element,A,m);
     calculateB(B);
     transpose(A,At);
     transpose(B,Bt);
 
-    productRealMatrix(k*Ae/(D*D),productMatrixMatrix(Bt,productMatrixMatrix(At,productMatrixMatrix(A,B,2,2,3),2,2,3),3,2,3),K);
+    productRealMatrix(k*Ve/(D*D),productMatrixMatrix(Bt,productMatrixMatrix(At,productMatrixMatrix(A,B,3,3,4),3,3,4),4,3,4),K);
 
     return K;
 }
+
+// Falta realizar el lado derecho
 
 float calculateLocalJ(int i,mesh m){
     float J,a,b,c,d;

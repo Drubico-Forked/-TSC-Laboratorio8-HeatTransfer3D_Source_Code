@@ -3,6 +3,7 @@
 #include "classes.h"
 #include "display_tools.h"
 #include "tools.h"
+#include "sel_tools.h"
 #include "sel.h"
 #include "assembly.h"
 
