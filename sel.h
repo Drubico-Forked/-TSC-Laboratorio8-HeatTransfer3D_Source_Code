@@ -80,27 +80,39 @@ Matrix createLocalK(int element,mesh &m){
     return K;
 }
 
-// Falta realizar el lado derecho
-
 float calculateLocalJ(int i,mesh m){
-    float J,a,b,c,d;
+    Matrix matrix;
+    Vector row1, row2, row3;
+
     element e = m.getElement(i);
     node n1 = m.getNode(e.getNode1()-1);
     node n2 = m.getNode(e.getNode2()-1);
     node n3 = m.getNode(e.getNode3()-1);
+    node n4 = m.getNode(e.getNode4()-1);
 
-    a = n2.getX()-n1.getX(); b = n3.getX()-n1.getX();
-    c = n2.getY()-n1.getY(); d = n3.getY()-n1.getY();
-    
-    J = a*d - b*c;
+    row1.push_back(calcularTenedor(e, EQUIS, 2, 1, m));
+    row1.push_back(calcularTenedor(e, EQUIS, 3, 1, m));
+    row1.push_back(calcularTenedor(e, EQUIS, 4, 1, m));
 
-    return J;
+    row2.push_back(calcularTenedor(e, YE, 2, 1, m));
+    row2.push_back(calcularTenedor(e, YE, 3, 1, m));
+    row2.push_back(calcularTenedor(e, YE, 4, 1, m));
+
+    row3.push_back(calcularTenedor(e, ZETA, 2, 1, m));
+    row3.push_back(calcularTenedor(e, ZETA, 3, 1, m));
+    row3.push_back(calcularTenedor(e, ZETA, 4, 1, m));
+
+    matrix.push_back(row1);
+    matrix.push_back(row2);
+    matrix.push_back(row3);
+
+    return determinant(matrix);
 }
 
 Vector createLocalb(int element,mesh &m){
     Vector b;
 
-    float Q = m.getParameter(HEAT_SOURCE),J;
+    float Q = m.getParameter(HEAT_X) + m.getParameter(HEAT_Y) + m.getParameter(HEAT_Z), J;
     J = calculateLocalJ(element,m);
 
     if(J == 0){
@@ -110,6 +122,7 @@ Vector createLocalb(int element,mesh &m){
 
     b.push_back(Q*J*(1/6)); 
     b.push_back(Q*J*(1/6)); 
+    b.push_back(Q*J*(1/6));
     b.push_back(Q*J*(1/6));
 
     return b;
@@ -122,6 +135,8 @@ void crearSistemasLocales(mesh &m,vector<Matrix> &localKs,vector<Vector> &localb
     }
 }
 
+
+// Falta realizar el lado derecho
 void assemblyK(element e,Matrix localK,Matrix &K){
     int index1 = e.getNode1() - 1;
     int index2 = e.getNode2() - 1;
